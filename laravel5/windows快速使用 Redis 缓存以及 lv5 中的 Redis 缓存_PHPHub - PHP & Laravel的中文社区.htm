@@ -1,0 +1,1218 @@
+<!--
+______                            _              _                                     _
+| ___ \                          | |            | |                                   | |
+| |_/ /___ __      __ ___  _ __  | |__   _   _  | |      __ _  _ __  __ _ __   __ ___ | |
+|  __// _ \\ \ /\ / // _ \| '__| | '_ \ | | | | | |     / _` || '__|/ _` |\ \ / // _ \| |
+| |  | (_) |\ V  V /|  __/| |    | |_) || |_| | | |____| (_| || |  | (_| | \ V /|  __/| |
+\_|   \___/  \_/\_/  \___||_|    |_.__/  \__, | \_____/ \__,_||_|   \__,_|  \_/  \___||_|
+                                          __/ |
+                                         |___/
+  ========================================================
+                                           phphub.org
+
+  --------------------------------------------------------
+  Laravel: v5.1 LTS
+-->
+<!DOCTYPE html>
+<html lang="zh"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+		<meta charset="UTF-8">
+
+		<title>快速使用 Redis 缓存以及 lv5 中的 Redis 缓存_PHPHub - PHP &amp; Laravel的中文社区</title>
+
+
+		  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+		<meta name="keywords" content="PHP,Laravel,PHP论坛,Laravel论坛,PHP社区,Laravel社区">
+		<meta name="author" content="The PHP China Community.">
+		<meta name="description" content="记录下redis的学习使用，方便以后换了平台之后查询，已经分享下使用过程
+首先，PHP安装redis扩展，百度谷歌的好多解决方案已经老了，这里详细记录下windows的安装过程，因为linux下编译安装拓展是很方便的。 看下自己php版本信息里面的这几个环境参数，拓展分好多不同版本编译的，但是寻找自己对应的拓展下载
+igbinary 拓展
+redis 拓展 下载好这两个拓展之后把两个 .dll 复...
+">
+        <meta name="_token" content="3D3D0RygSRibTgCSDP4XMuq3Lnz5CTqtrqW6fxCx">
+
+        <link rel="stylesheet" href="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/styles-1704e12144.css">
+
+        <link rel="shortcut icon" href="https://dn-phphub.qbox.me/favicon.ico">
+
+        <script src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/analytics.js" async=""></script><script>
+            Config = {
+                'cdnDomain': 'https://dn-phphub.qbox.me/',
+                'user_id': 5315,
+                'user_avatar': "https://dn-phphub.qbox.me/uploads/avatars/5315_1470736141.jpeg?imageView2/1/w/100/h/100",
+                'user_link': "https://phphub.org/users/5315",
+                'routes': {
+                    'notificationsCount' : 'https://phphub.org/notifications/count',
+                    'upload_image' : 'https://phphub.org/upload_image'
+                },
+                'token': '3D3D0RygSRibTgCSDP4XMuq3Lnz5CTqtrqW6fxCx',
+                'following_users':  []             };
+
+			var ShowCrxHint = 'no';
+        </script>
+
+	    
+	</head>
+	<body id="body">
+
+		<div id="wrap">
+
+			<div role="navigation" class="navbar navbar-default navbar-static-top topnav">
+  <div class="container">
+    <div class="navbar-header">
+
+      <a href="https://phphub.org/" class="navbar-brand">PHPHub</a>
+    </div>
+    <div id="top-navbar-collapse" class="navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li class=" active"><a href="https://phphub.org/topics">社区</a></li>
+        <li class=""><a href="https://phphub.org/categories/1">招聘</a></li>
+        <li class=""><a href="https://phphub.org/sites">酷站</a></li>
+        <li class=""><a href="https://phphub.org/hall_of_fames">名人堂</a></li>
+        <li class=""><a href="https://phphub.org/topics/2541">Wiki</a></li>
+      </ul>
+
+      <div class="navbar-right">
+          <form method="GET" action="https://phphub.org/search" accept-charset="UTF-8" class="navbar-form navbar-left" target="_blank">
+            <div class="form-group">
+            <input class="form-control search-input mac-style" placeholder="搜索" name="q" type="text">
+            </div>
+          </form>
+
+        <ul class="nav navbar-nav github-login">
+                        <li>
+                  <a href="https://phphub.org/notifications" class="text-warning">
+                      <span class="badge badge-fade" id="notification-count">0</span>
+                  </a>
+              </li>
+
+                                <li>
+                    <a class="nav-edit-btn text-md margin-top-2px" href="https://phphub.org/users/5315/edit" data-content="编辑个人资料">
+                        <i class="fa fa-cog"></i>
+                    </a>
+                </li>
+
+
+              <li>
+                  <a href="https://phphub.org/users/5315">
+                      <img class="avatar-topnav" alt="Summer" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/5315_1470736141.jpg">
+                       戴明康
+                  </a>
+              </li>
+              <li>
+                  <a id="login-out" class="button" href="https://phphub.org/logout" data-lang-loginout="你确定要退出吗?">
+                      <i class="fa fa-sign-out"></i> 退出
+                  </a>
+              </li>
+                  </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+			<div class="container main-container">
+
+				
+				
+				
+<div class="col-md-9 topics-show main-col">
+  <!-- Topic Detial -->
+  <div class="topic panel panel-default padding-md">
+    <div class="infos panel-heading">
+
+      <h1 class="panel-title topic-title">快速使用 Redis 缓存以及 lv5 中的 Redis 缓存</h1>
+
+      <div class="meta inline-block">
+
+  <a href="https://phphub.org/categories/5" class="remove-padding-left">
+    分享
+  </a>
+  ⋅
+  <a href="https://phphub.org/users/1202">
+    qq215672398
+  </a>
+
+  ⋅
+  于 <abbr data-original-title="2015-05-29 01:05:38" data-content="2015-05-29 01:05:38" title="" class="timeago popover-with-html">1年前</abbr>
+  ⋅
+
+      最后回复由
+      <a href="https://phphub.org/users/1202">
+        qq215672398
+      </a>
+     于 <abbr data-original-title="2015-07-27 22:00:20" data-content="2015-07-27 22:00:20" title="" class="timeago popover-with-html">1年前</abbr>
+    ⋅
+  
+  4312 阅读
+</div>
+<div class="clearfix"></div>
+    </div>
+
+    <div class="content-body entry-content panel-body ">
+
+      <div class="markdown-body" id="emojify"> <h3>记录下redis的学习使用，方便以后换了平台之后查询，已经分享下使用过程</h3>
+<h4>首先，PHP安装redis扩展，百度谷歌的好多解决方案已经老了，这里详细记录下windows的安装过程，因为linux下编译安装拓展是很方便的。</h4>
+<p><img data-type="image" alt="file" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/PLSwNGzv32.jpg"></p>
+<p>看下自己php版本信息里面的这几个环境参数，拓展分好多不同版本编译的，但是寻找自己对应的拓展下载</p>
+<ul><li><a href="http://windows.php.net/downloads/pecl/releases/igbinary/1.2.1/">igbinary 拓展</a></li>
+<li><a href="http://windows.php.net/downloads/pecl/snaps/redis/2.2.5/">redis 拓展</a></li>
+</ul>
+
+<p>下载好这两个拓展之后把两个 .dll 复制到 .../php/ext 目录下，然后讲拓展添加到 php.ini中</p>
+<pre><code>;php_redis
+extension=php_igbinary.dll
+extension=php_redis.dll</code></pre>
+<p>重启apache就能在php_info中看到redis的拓展信息了</p>
+<p>接着安装 <a href="http://redis.io/download">redis</a>，windows就去github上下载编译好的redis包吧，<a href="https://github.com/MSOpenTech/redis/releases/download/win-2.8.19.1/redis-2.8.19.zip">地址</a>，解压随便放在一个目录下就可以启动redis服务了，在目录下运行</p>
+<pre><code>redis-server.exe redis.conf</code></pre>
+<p>这时候任务管理器中就能看到 redis-server.exe启动了，接着测试下我们是否成功安装，继续执行</p>
+<pre><code>redis-cli</code></pre>
+<p>启动redis命令行客户端(或许不叫这个名称，不清楚)</p>
+<p><img data-type="image" alt="file" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/FASWZmjK3E.jpg"></p>
+<p>这里只是测试，redis的更多数据结构和操作查看文档</p>
+<p>下面就可以去我们的laravel中使用redis缓存了，安装 predis/redis</p>
+<pre><code>"predis/predis": "*"</code></pre>
+<p>接下来修改我们的配置文件 chche.php</p>
+<pre><code>'default' =&gt; 'redis'</code></pre>
+<p>redis的一些配置在database.php在中可以看到</p>
+<pre><code>    'redis' =&gt; [
+
+    'cluster' =&gt; false,
+
+    'default' =&gt; [
+        'host'     =&gt; '127.0.0.1',
+        'port'     =&gt; 6379,
+        'database' =&gt; 0,
+    ],
+
+        ],</code></pre>
+<p>这里使用默认的就可以了，接着去测试一下使用情况</p>
+<pre class="  language-php"><span class="token scope">Route<span class="token punctuation">::</span></span><span class="token function">get<span class="token punctuation">(</span></span><span class="token string">'test'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>\<span class="token scope">Cache<span class="token punctuation">::</span></span><span class="token function">has<span class="token punctuation">(</span></span><span class="token string">'test'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">echo</span> <span class="token string">'存在chche,读取'</span><span class="token punctuation">.</span>'<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>br</span> <span class="token punctuation">/&gt;</span></span></span>'<span class="token punctuation">;</span>
+    <span class="token keyword">echo</span> \<span class="token scope">Cache<span class="token punctuation">::</span></span><span class="token function">get<span class="token punctuation">(</span></span><span class="token string">'test'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span><span class="token punctuation">{</span>
+    <span class="token keyword">echo</span> <span class="token string">'不存在cache,现在创建'</span><span class="token punctuation">.</span>'<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>br</span> <span class="token punctuation">/&gt;</span></span></span>'<span class="token punctuation">;</span>
+    <span class="token variable">$time</span> <span class="token operator">=</span> \<span class="token scope">Carbon<span class="token punctuation">\</span>Carbon<span class="token punctuation">::</span></span><span class="token function">now<span class="token punctuation">(</span></span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">addMinutes<span class="token punctuation">(</span></span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token variable">$redis</span> <span class="token operator">=</span> \<span class="token scope">Cache<span class="token punctuation">::</span></span><span class="token function">add<span class="token punctuation">(</span></span><span class="token string">'test'</span><span class="token punctuation">,</span> <span class="token string">'我是缓存资源'</span><span class="token punctuation">,</span> <span class="token variable">$time</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">echo</span> \<span class="token scope">Cache<span class="token punctuation">::</span></span><span class="token function">get<span class="token punctuation">(</span></span><span class="token string">'test'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span></pre>
+<p>第一次进去test地址，会看到</p>
+<pre><code>不存在cache,现在创建
+我是缓存资源</code></pre>
+<p>这时候可以去我们的客户端中查询下当前redis使用情况</p>
+<pre><code>redis 127.0.0.1:6379&gt; keys *
+1) "laravel:test"
+redis 127.0.0.1:6379&gt; ttl laravel:test
+(integer) 590
+redis 127.0.0.1:6379&gt; ttl laravel:test
+(integer) 586</code></pre>
+<p>你也可以使用其他缓存方法，laravel文档中也有详细说明</p>
+<p>这里只是演示了下，有点注意的地方，laravel在使用redis储存缓存时貌似会序列化value值，所以你的静态资源缓冲时需要注意，至于怎么写最好，还请社区高人指点下。</p>
+<p>想想，使用redis减轻数据库的压力，还可以做很多有趣的事情！</p> </div>
+      <div data-lang-excellent="本帖已被设为精华帖！" data-lang-wiki="本帖已被设为社区 Wiki！" class="ribbon-container">
+        <div class="ribbon">
+          <div class="ribbon-excellent">
+          <i class="fa fa-trophy"></i> 本帖已被设为精华帖！
+      </div>
+    
+  </div>
+      </div>
+    </div>
+
+    <div class="appends-container" data-lang-append="附言">
+          </div>
+
+    <div class="panel-footer operate">
+
+    <div class="pull-left">
+        <div class="social-share-cs share-component social-share"><a href="http://service.weibo.com/share/share.php?url=https%3A%2F%2Fphphub.org%2Ftopics%2F877&amp;title=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98%20from%20PHPHub%20-%20PHP%EF%BC%8CLaravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%20%23laravel%23%20%40phphub%20%20%40%E6%9D%8E%E6%A1%82%E9%BE%99_CJ%20&amp;pic=https%3A%2F%2Fdn-phphub.qbox.me%2Fuploads%2Favatars%2F5315_1470736141.jpeg%3FimageView2%2F1%2Fw%2F100%2Fh%2F100&amp;appkey=" class="social-share-icon icon-weibo" target="_blank"></a><a href="javascript:" class="social-share-icon icon-wechat" target="_blank"><div class="wechat-qrcode"><h4>微信扫一扫：分享</h4><div title="https://phphub.org/topics/877" class="qrcode"><canvas style="display: none;" height="100" width="100"></canvas><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAC+0lEQVR4nO2bwXKkQAxD+f+fnr3ktgNILRkIea7qS8ctS37U3LJt2/ZpH7eSt3s6rre9HuW+fABy5AEgQb0OSGsZyZJcHcVPS1Px6RZAAk3Fp1sACTQVn27JQO5apBvCCCofN5c796QfIAAByFH/dUDcWgyULEP+cAACEIC8HogbdPqjAAhAANJc3oSmDMQtdxmKzjScxPPE3gACkCWDfxdI67iL+e335QMQgLzsvno+F5YbOulR+pW3rk5aADl5CxDz7V7P64AkC3CPq5/4dMv1kGYHyEkBJFhGkqXlIQbiPnKXmrxN9N2eiY9r8aMDyJE3gJiBkgUo3h4DxF1AoqPoJ3OnF1zeIUAAItafB+IOd6s1a8LzRK6VAshgrpUCyGCuldoFogx3j6Ljzt3rce9bb5PsPwcgABGXMbG8Cc0qkNbiW0HdnsTz9EekZAEIQABylGUJiBvarQmA034mcgHkAToAKfmZyPVz+kFbmu4ykkUuLi+e9eVvAFnxAxChXgfEFVaGtPQTP9MfXTMXQC7qN3wD5Ip+w7f3+9367WyFntZU3iZzvxyAAAQg+ycJ1woxMct96/YkGQEy0JNkBMhAT5JxCYgy0DV4paaic5cfgDwgo/IWIDf5WQKinGQZCbRkAUpN9x9q7QkDBCAA+Xy0/1NPFnDliRYR6Lgf4979tm0AOcvSegsQsx4DJAl65SIn4Cs603kBAhCAWJqtBbhvlbktgInnpJbyumIA0Qsggc5jgLhm7wKVBHU1W2dxFkCO/APEXF7So/i/HIjkNqgJCO5HkXi4HKw0JSiAAOR3AykIxKFb5YJqaSr3ij5ASprKvaIPkJKmcq/o/wckqZZxxU9r8dMAXX2AAGT93n37OiAnj+JFJnNbS2p5SLx98QoQgADkyOs9QNz7xMME2KldAQQgALkVyJUwk8VPQzNmAWQlr+vTmAWQlbyuT2OWNzAxMlETkPd6rsgIEIB069VAWicJN62/1+/2JB/CiWeAAAQgR54B8iQg/wCmtfFGpbo/DwAAAABJRU5ErkJggg==" style="display: block;" alt="Scan me!"></div><div class="help"><p>微信里点“发现”，扫一下</p><p>二维码便可将本文分享至朋友圈。</p></div></div></a><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fphphub.org%2Ftopics%2F877" class="social-share-icon icon-facebook" target="_blank"></a><a href="https://twitter.com/intent/tweet?text=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98%20from%20PHPHub%20-%20PHP%EF%BC%8CLaravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%20%23laravel%23%20%40phphub%20%20%40%E6%9D%8E%E6%A1%82%E9%BE%99_CJ%20&amp;url=https%3A%2F%2Fphphub.org%2Ftopics%2F877&amp;via=https%3A%2F%2Fphphub.org" class="social-share-icon icon-twitter" target="_blank"></a><a href="https://plus.google.com/share?url=https%3A%2F%2Fphphub.org%2Ftopics%2F877" class="social-share-icon icon-google" target="_blank"></a><a href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https%3A%2F%2Fphphub.org%2Ftopics%2F877&amp;title=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98%20from%20PHPHub%20-%20PHP%EF%BC%8CLaravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%20%23laravel%23%20%40phphub%20%20%40%E6%9D%8E%E6%A1%82%E9%BE%99_CJ%20&amp;desc=%E8%AE%B0%E5%BD%95%E4%B8%8Bredis%E7%9A%84%E5%AD%A6%E4%B9%A0%E4%BD%BF%E7%94%A8%EF%BC%8C%E6%96%B9%E4%BE%BF%E4%BB%A5%E5%90%8E%E6%8D%A2%E4%BA%86%E5%B9%B3%E5%8F%B0%E4%B9%8B%E5%90%8E%E6%9F%A5%E8%AF%A2%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%88%86%E4%BA%AB%E4%B8%8B%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B%0A%E9%A6%96%E5%85%88%EF%BC%8CPHP%E5%AE%89%E8%A3%85redis%E6%89%A9%E5%B1%95%EF%BC%8C%E7%99%BE%E5%BA%A6%E8%B0%B7%E6%AD%8C%E7%9A%84%E5%A5%BD%E5%A4%9A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%B7%B2%E7%BB%8F%E8%80%81%E4%BA%86%EF%BC%8C%E8%BF%99%E9%87%8C%E8%AF%A6%E7%BB%86%E8%AE%B0%E5%BD%95%E4%B8%8Bwindows%E7%9A%84%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B%EF%BC%8C%E5%9B%A0%E4%B8%BAlinux%E4%B8%8B%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E6%8B%93%E5%B1%95%E6%98%AF%E5%BE%88%E6%96%B9%E4%BE%BF%E7%9A%84%E3%80%82%20%E7%9C%8B%E4%B8%8B%E8%87%AA%E5%B7%B1php%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF%E9%87%8C%E9%9D%A2%E7%9A%84%E8%BF%99%E5%87%A0%E4%B8%AA%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0%EF%BC%8C%E6%8B%93%E5%B1%95%E5%88%86%E5%A5%BD%E5%A4%9A%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC%E7%BC%96%E8%AF%91%E7%9A%84%EF%BC%8C%E4%BD%86%E6%98%AF%E5%AF%BB%E6%89%BE%E8%87%AA%E5%B7%B1%E5%AF%B9%E5%BA%94%E7%9A%84%E6%8B%93%E5%B1%95%E4%B8%8B%E8%BD%BD%0Aigbinary%20%E6%8B%93%E5%B1%95%0Aredis%20%E6%8B%93%E5%B1%95%20%E4%B8%8B%E8%BD%BD%E5%A5%BD%E8%BF%99%E4%B8%A4%E4%B8%AA%E6%8B%93%E5%B1%95%E4%B9%8B%E5%90%8E%E6%8A%8A%E4%B8%A4%E4%B8%AA%20.dll%20%E5%A4%8D...%0A&amp;summary=%E8%AE%B0%E5%BD%95%E4%B8%8Bredis%E7%9A%84%E5%AD%A6%E4%B9%A0%E4%BD%BF%E7%94%A8%EF%BC%8C%E6%96%B9%E4%BE%BF%E4%BB%A5%E5%90%8E%E6%8D%A2%E4%BA%86%E5%B9%B3%E5%8F%B0%E4%B9%8B%E5%90%8E%E6%9F%A5%E8%AF%A2%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%88%86%E4%BA%AB%E4%B8%8B%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B%0A%E9%A6%96%E5%85%88%EF%BC%8CPHP%E5%AE%89%E8%A3%85redis%E6%89%A9%E5%B1%95%EF%BC%8C%E7%99%BE%E5%BA%A6%E8%B0%B7%E6%AD%8C%E7%9A%84%E5%A5%BD%E5%A4%9A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%B7%B2%E7%BB%8F%E8%80%81%E4%BA%86%EF%BC%8C%E8%BF%99%E9%87%8C%E8%AF%A6%E7%BB%86%E8%AE%B0%E5%BD%95%E4%B8%8Bwindows%E7%9A%84%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B%EF%BC%8C%E5%9B%A0%E4%B8%BAlinux%E4%B8%8B%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E6%8B%93%E5%B1%95%E6%98%AF%E5%BE%88%E6%96%B9%E4%BE%BF%E7%9A%84%E3%80%82%20%E7%9C%8B%E4%B8%8B%E8%87%AA%E5%B7%B1php%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF%E9%87%8C%E9%9D%A2%E7%9A%84%E8%BF%99%E5%87%A0%E4%B8%AA%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0%EF%BC%8C%E6%8B%93%E5%B1%95%E5%88%86%E5%A5%BD%E5%A4%9A%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC%E7%BC%96%E8%AF%91%E7%9A%84%EF%BC%8C%E4%BD%86%E6%98%AF%E5%AF%BB%E6%89%BE%E8%87%AA%E5%B7%B1%E5%AF%B9%E5%BA%94%E7%9A%84%E6%8B%93%E5%B1%95%E4%B8%8B%E8%BD%BD%0Aigbinary%20%E6%8B%93%E5%B1%95%0Aredis%20%E6%8B%93%E5%B1%95%20%E4%B8%8B%E8%BD%BD%E5%A5%BD%E8%BF%99%E4%B8%A4%E4%B8%AA%E6%8B%93%E5%B1%95%E4%B9%8B%E5%90%8E%E6%8A%8A%E4%B8%A4%E4%B8%AA%20.dll%20%E5%A4%8D...%0A&amp;site=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20%26%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA" class="social-share-icon icon-qzone" target="_blank"></a><a href="http://connect.qq.com/widget/shareqq/index.html?url=https%3A%2F%2Fphphub.org%2Ftopics%2F877&amp;title=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98%20from%20PHPHub%20-%20PHP%EF%BC%8CLaravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%20%23laravel%23%20%40phphub%20%20%40%E6%9D%8E%E6%A1%82%E9%BE%99_CJ%20&amp;source=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20%26%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA&amp;desc=%E8%AE%B0%E5%BD%95%E4%B8%8Bredis%E7%9A%84%E5%AD%A6%E4%B9%A0%E4%BD%BF%E7%94%A8%EF%BC%8C%E6%96%B9%E4%BE%BF%E4%BB%A5%E5%90%8E%E6%8D%A2%E4%BA%86%E5%B9%B3%E5%8F%B0%E4%B9%8B%E5%90%8E%E6%9F%A5%E8%AF%A2%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%88%86%E4%BA%AB%E4%B8%8B%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B%0A%E9%A6%96%E5%85%88%EF%BC%8CPHP%E5%AE%89%E8%A3%85redis%E6%89%A9%E5%B1%95%EF%BC%8C%E7%99%BE%E5%BA%A6%E8%B0%B7%E6%AD%8C%E7%9A%84%E5%A5%BD%E5%A4%9A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%B7%B2%E7%BB%8F%E8%80%81%E4%BA%86%EF%BC%8C%E8%BF%99%E9%87%8C%E8%AF%A6%E7%BB%86%E8%AE%B0%E5%BD%95%E4%B8%8Bwindows%E7%9A%84%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B%EF%BC%8C%E5%9B%A0%E4%B8%BAlinux%E4%B8%8B%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E6%8B%93%E5%B1%95%E6%98%AF%E5%BE%88%E6%96%B9%E4%BE%BF%E7%9A%84%E3%80%82%20%E7%9C%8B%E4%B8%8B%E8%87%AA%E5%B7%B1php%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF%E9%87%8C%E9%9D%A2%E7%9A%84%E8%BF%99%E5%87%A0%E4%B8%AA%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0%EF%BC%8C%E6%8B%93%E5%B1%95%E5%88%86%E5%A5%BD%E5%A4%9A%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC%E7%BC%96%E8%AF%91%E7%9A%84%EF%BC%8C%E4%BD%86%E6%98%AF%E5%AF%BB%E6%89%BE%E8%87%AA%E5%B7%B1%E5%AF%B9%E5%BA%94%E7%9A%84%E6%8B%93%E5%B1%95%E4%B8%8B%E8%BD%BD%0Aigbinary%20%E6%8B%93%E5%B1%95%0Aredis%20%E6%8B%93%E5%B1%95%20%E4%B8%8B%E8%BD%BD%E5%A5%BD%E8%BF%99%E4%B8%A4%E4%B8%AA%E6%8B%93%E5%B1%95%E4%B9%8B%E5%90%8E%E6%8A%8A%E4%B8%A4%E4%B8%AA%20.dll%20%E5%A4%8D...%0A&amp;pics=https%3A%2F%2Fdn-phphub.qbox.me%2Fuploads%2Favatars%2F5315_1470736141.jpeg%3FimageView2%2F1%2Fw%2F100%2Fh%2F100" class="social-share-icon icon-qq" target="_blank"></a><a href="http://shuo.douban.com/%21service/share?href=https%3A%2F%2Fphphub.org%2Ftopics%2F877&amp;name=%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98%20from%20PHPHub%20-%20PHP%EF%BC%8CLaravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%20%23laravel%23%20%40phphub%20%20%40%E6%9D%8E%E6%A1%82%E9%BE%99_CJ%20&amp;text=%E8%AE%B0%E5%BD%95%E4%B8%8Bredis%E7%9A%84%E5%AD%A6%E4%B9%A0%E4%BD%BF%E7%94%A8%EF%BC%8C%E6%96%B9%E4%BE%BF%E4%BB%A5%E5%90%8E%E6%8D%A2%E4%BA%86%E5%B9%B3%E5%8F%B0%E4%B9%8B%E5%90%8E%E6%9F%A5%E8%AF%A2%EF%BC%8C%E5%B7%B2%E7%BB%8F%E5%88%86%E4%BA%AB%E4%B8%8B%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B%0A%E9%A6%96%E5%85%88%EF%BC%8CPHP%E5%AE%89%E8%A3%85redis%E6%89%A9%E5%B1%95%EF%BC%8C%E7%99%BE%E5%BA%A6%E8%B0%B7%E6%AD%8C%E7%9A%84%E5%A5%BD%E5%A4%9A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%B7%B2%E7%BB%8F%E8%80%81%E4%BA%86%EF%BC%8C%E8%BF%99%E9%87%8C%E8%AF%A6%E7%BB%86%E8%AE%B0%E5%BD%95%E4%B8%8Bwindows%E7%9A%84%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B%EF%BC%8C%E5%9B%A0%E4%B8%BAlinux%E4%B8%8B%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E6%8B%93%E5%B1%95%E6%98%AF%E5%BE%88%E6%96%B9%E4%BE%BF%E7%9A%84%E3%80%82%20%E7%9C%8B%E4%B8%8B%E8%87%AA%E5%B7%B1php%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF%E9%87%8C%E9%9D%A2%E7%9A%84%E8%BF%99%E5%87%A0%E4%B8%AA%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0%EF%BC%8C%E6%8B%93%E5%B1%95%E5%88%86%E5%A5%BD%E5%A4%9A%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC%E7%BC%96%E8%AF%91%E7%9A%84%EF%BC%8C%E4%BD%86%E6%98%AF%E5%AF%BB%E6%89%BE%E8%87%AA%E5%B7%B1%E5%AF%B9%E5%BA%94%E7%9A%84%E6%8B%93%E5%B1%95%E4%B8%8B%E8%BD%BD%0Aigbinary%20%E6%8B%93%E5%B1%95%0Aredis%20%E6%8B%93%E5%B1%95%20%E4%B8%8B%E8%BD%BD%E5%A5%BD%E8%BF%99%E4%B8%A4%E4%B8%AA%E6%8B%93%E5%B1%95%E4%B9%8B%E5%90%8E%E6%8A%8A%E4%B8%A4%E4%B8%AA%20.dll%20%E5%A4%8D...%0A&amp;image=https%3A%2F%2Fdn-phphub.qbox.me%2Fuploads%2Favatars%2F5315_1470736141.jpeg%3FimageView2%2F1%2Fw%2F100%2Fh%2F100&amp;starid=0&amp;aid=0&amp;style=11" class="social-share-icon icon-douban" target="_blank"></a></div>
+    </div>
+
+  <div class="pull-right actions">
+
+    
+    
+  </div>
+  <div class="clearfix"></div>
+</div>
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="" aria-labelledby="exampleModalLabel">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">添加附言</h4>
+      </div>
+
+     <form method="POST" action="https://phphub.org/topics/877/append" accept-charset="UTF-8">
+         <input name="_token" value="3D3D0RygSRibTgCSDP4XMuq3Lnz5CTqtrqW6fxCx" type="hidden">
+        <div class="modal-body">
+
+          <div class="alert alert-warning">
+              附加内容, 使用此功能的话, 会给所有参加过讨论的人发送提醒.
+          </div>
+
+          <div class="form-group">
+              <textarea class="form-control" style="min-height: 20px; overflow: hidden; word-wrap: break-word; resize: horizontal; height: 164px;" placeholder="请使用 Markdown 格式书写 ;-)" name="content" cols="50" rows="10"></textarea>
+          </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="submit" class="btn btn-primary">提交</button>
+          </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+  </div>
+
+
+  <div class="votes-container panel panel-default padding-md">
+
+    <div class="panel-body vote-box text-center">
+
+        <div class="btn-group">
+
+            <a data-original-title="Up Vote" data-ajax="post" href="javascript:void(0);" data-url="https://phphub.org/topics/877/upvote" title="" data-content="点赞相当于收藏哦，可以在个人页面的「赞过的话题」导航里查看" id="up-vote" class="vote btn btn-primary popover-with-html ">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                点赞
+            </a>
+
+                    </div>
+
+        <div class="voted-users">
+
+                            <div class="user-lists">
+                                            <a href="https://phphub.org/users/3276" data-userid="3276">
+                            <img class="img-thumbnail avatar avatar-middle" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/3276_1450926157.png" style="width:48px;height:48px;">
+                        </a>
+                                            <a href="https://phphub.org/users/3234" data-userid="3234">
+                            <img class="img-thumbnail avatar avatar-middle" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/3234_1450663403.png" style="width:48px;height:48px;">
+                        </a>
+                                            <a href="https://phphub.org/users/306" data-userid="306">
+                            <img class="img-thumbnail avatar avatar-middle" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/306_1427370768.png" style="width:48px;height:48px;">
+                        </a>
+                                            <a href="https://phphub.org/users/1258" data-userid="1258">
+                            <img class="img-thumbnail avatar avatar-middle" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1258_1428394664.png" style="width:48px;height:48px;">
+                        </a>
+                                            <a href="https://phphub.org/users/1546" data-userid="1546">
+                            <img class="img-thumbnail avatar avatar-middle" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1546_1469697092.jpg" style="width:48px;height:48px;">
+                        </a>
+                                            <a href="https://phphub.org/users/243" data-userid="243">
+                            <img class="img-thumbnail avatar avatar-middle" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/243_1427370741.png" style="width:48px;height:48px;">
+                        </a>
+                                    </div>
+            
+            <a class="voted-template" href="" data-userid="" style="display:none">
+                <img class="img-thumbnail avatar avatar-middle" src="" style="width:48px;height:48px;">
+            </a>
+        </div>
+
+    </div>
+  </div>
+
+  <!-- Reply List -->
+  <div class="replies panel panel-default list-panel replies-index padding-md">
+    <div class="panel-heading">
+      <div class="total">回复数量: <b>11</b> </div>
+    </div>
+
+    <div class="panel-body">
+
+              <ul class="list-group row">
+
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/87">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="lovecn" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/87_1427370668.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/87" title="lovecn" class="remove-padding-left author">
+            lovecn
+        </a>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4805" href="javascript:void(0);" data-url="https://phphub.org/replies/4805/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('lovecn');" title="回复 lovecn"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply1" class="anchor" href="#reply1" aria-hidden="true">#1</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-05-29 09:42:19" data-content="2015-05-29 09:42:19" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p>我开始木有设置redis为默认cache，而是直接用redis，记得在app.php重命名redis</p>
+<pre class=" language-php"><code class=" language-php"><span class="token string">'RedisFacade'</span>     <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token string">'Illuminate\Support\Facades\Redis'</span><span class="token punctuation">,</span>
+<span class="token keyword">use</span> <span class="token package">RedisFacade</span><span class="token punctuation">;</span></code></pre>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1202">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="qq215672398" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1202_1431763756.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1202" title="qq215672398" class="remove-padding-left author">
+            qq215672398
+        </a>
+                <span class="introduction">
+             ，还什么都没有哦
+        </span>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4813" href="javascript:void(0);" data-url="https://phphub.org/replies/4813/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('qq215672398');" title="回复 qq215672398"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply2" class="anchor" href="#reply2" aria-hidden="true">#2</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-05-29 12:38:48" data-content="2015-05-29 12:38:48" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/87">@lovecn</a> soga</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1338">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="zhaozhenxiang" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1338_1429197381.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1338" title="zhaozhenxiang" class="remove-padding-left author">
+            zhaozhenxiang
+        </a>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4950" href="javascript:void(0);" data-url="https://phphub.org/replies/4950/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('zhaozhenxiang');" title="回复 zhaozhenxiang"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply3" class="anchor" href="#reply3" aria-hidden="true">#3</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-03 22:08:19" data-content="2015-06-03 22:08:19" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p>好文。 
+还以为是laravel中建立一个简单的或者基础的cach机制来实现静态化和伪静态呢。</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1202">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="qq215672398" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1202_1431763756.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1202" title="qq215672398" class="remove-padding-left author">
+            qq215672398
+        </a>
+                <span class="introduction">
+             ，还什么都没有哦
+        </span>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4952" href="javascript:void(0);" data-url="https://phphub.org/replies/4952/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('qq215672398');" title="回复 qq215672398"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply4" class="anchor" href="#reply4" aria-hidden="true">#4</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-03 22:18:53" data-content="2015-06-03 22:18:53" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/1338">@zhaozhenxiang</a> 可以这样静态化吧</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1654">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="anuxs" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1654_1432896106.jpg" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1654" title="anuxs" class="remove-padding-left author">
+            anuxs
+        </a>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4967" href="javascript:void(0);" data-url="https://phphub.org/replies/4967/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('anuxs');" title="回复 anuxs"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply5" class="anchor" href="#reply5" aria-hidden="true">#5</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-04 10:16:42" data-content="2015-06-04 10:16:42" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/1338">@zhaozhenxiang</a> 
+cache没有那么神秘，所有的cache本质上都是key-&gt;value键值对。只不过有的框架自己实现了一部分page渲染缓存、数据查询缓
+存。在laravel里面，这些都可以交由开发者自己控制，也非常简单。结合nosql内存数据库缓存构架，非常灵活和高效。</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1202">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="qq215672398" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1202_1431763756.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1202" title="qq215672398" class="remove-padding-left author">
+            qq215672398
+        </a>
+                <span class="introduction">
+             ，还什么都没有哦
+        </span>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4972" href="javascript:void(0);" data-url="https://phphub.org/replies/4972/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('qq215672398');" title="回复 qq215672398"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply6" class="anchor" href="#reply6" aria-hidden="true">#6</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-04 11:43:29" data-content="2015-06-04 11:43:29" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/1654">@anuxs</a> 在理</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1338">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="zhaozhenxiang" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1338_1429197381.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1338" title="zhaozhenxiang" class="remove-padding-left author">
+            zhaozhenxiang
+        </a>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-4997" href="javascript:void(0);" data-url="https://phphub.org/replies/4997/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('zhaozhenxiang');" title="回复 zhaozhenxiang"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply7" class="anchor" href="#reply7" aria-hidden="true">#7</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-05 15:08:28" data-content="2015-06-05 15:08:28" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p>静态化机制的关键不是命中缓存而是失效缓存。
+机制是机制， 使用是使用，语法是语法。</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1202">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="qq215672398" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1202_1431763756.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1202" title="qq215672398" class="remove-padding-left author">
+            qq215672398
+        </a>
+                <span class="introduction">
+             ，还什么都没有哦
+        </span>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-5000" href="javascript:void(0);" data-url="https://phphub.org/replies/5000/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('qq215672398');" title="回复 qq215672398"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply8" class="anchor" href="#reply8" aria-hidden="true">#8</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-05 15:26:27" data-content="2015-06-05 15:26:27" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/1338">@zhaozhenxiang</a> 关于命中率据说40%就是个不错的数字了，感觉知识缓存一些静态内容使用memcached使用一点，redis提供的数据结构的一些用法和数据库结合起来存取数据减轻服务器才是重点 麦维据说这点做的很好</p>
+<p>前路漫漫啊。。。</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1338">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="zhaozhenxiang" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1338_1429197381.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1338" title="zhaozhenxiang" class="remove-padding-left author">
+            zhaozhenxiang
+        </a>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-5161" href="javascript:void(0);" data-url="https://phphub.org/replies/5161/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('zhaozhenxiang');" title="回复 zhaozhenxiang"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply9" class="anchor" href="#reply9" aria-hidden="true">#9</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-06-12 10:34:48" data-content="2015-06-12 10:34:48" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/1202">@qq215672398</a>  不知道多少命中是优秀， 不过使用memcached 和redis 区别并不大。</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/2063">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="DysoDeng" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/2063_1437983517.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/2063" title="DysoDeng" class="remove-padding-left author">
+            DysoDeng
+        </a>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-5896" href="javascript:void(0);" data-url="https://phphub.org/replies/5896/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('DysoDeng');" title="回复 DysoDeng"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply10" class="anchor" href="#reply10" aria-hidden="true">#10</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-07-27 15:53:19" data-content="2015-07-27 15:53:19" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p>请教一下，如果redis服务器设置了auth，在Laravel5中怎么配置呢</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+                <a name="last-reply" class="anchor" href="#last-reply" aria-hidden="true"></a>
+      
+   <li class="list-group-item media" style="margin-top: 0px;">
+
+    <div class="avatar pull-left">
+      <a href="https://phphub.org/users/1202">
+        <img class="media-object img-thumbnail avatar avatar-middle" alt="qq215672398" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1202_1431763756.png" style="width:48px;height:48px;">
+      </a>
+    </div>
+
+    <div class="infos">
+
+      <div class="media-heading">
+
+        <a href="https://phphub.org/users/1202" title="qq215672398" class="remove-padding-left author">
+            qq215672398
+        </a>
+                <span class="introduction">
+             ，还什么都没有哦
+        </span>
+        
+        <span class="operate pull-right">
+
+                    <a class="comment-vote" data-ajax="post" id="reply-up-vote-5903" href="javascript:void(0);" data-url="https://phphub.org/replies/5903/vote" title="Vote Up">
+             <i class="fa fa-thumbs-o-up" style="font-size:14px;"></i> <span class="vote-count"></span>
+          </a>
+          <span> ⋅  </span>
+          
+                    <a class="fa fa-reply" href="javascript:void(0)" onclick="replyOne('qq215672398');" title="回复 qq215672398"></a>
+        </span>
+
+        <div class="meta">
+            <a name="reply11" class="anchor" href="#reply11" aria-hidden="true">#11</a>
+
+
+            <span> ⋅  </span>
+            <abbr data-original-title="2015-07-27 22:00:20" data-content="2015-07-27 22:00:20" class="timeago popover-with-html" title="">1年前</abbr>
+        </div>
+
+      </div>
+
+      <div class="media-body markdown-reply content-body">
+<p><a href="https://phphub.org/users/2063">@DysoDeng</a> 没试过，不好意思，话说缓存用 memcached 可以吗，现在觉得redis有点大材小用</p>
+      </div>
+
+    </div>
+
+  </li>
+  
+</ul>
+        <div id="replies-empty-block" class="empty-block hide">暂无评论~~</div>
+      
+      <!-- Pager -->
+      <div class="pull-right" style="padding-right:20px">
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Reply Box -->
+  <div class="reply-box form box-block">
+
+    
+    <form method="POST" action="https://phphub.org/replies" accept-charset="UTF-8" id="reply-form">
+      <input name="_token" value="3D3D0RygSRibTgCSDP4XMuq3Lnz5CTqtrqW6fxCx" type="hidden">
+      <input name="topic_id" value="877" type="hidden">
+
+        <div id="reply_notice" class="box">
+    <ul class="helpblock list">
+      <li>请注意单词拼写，以及中英文排版，<a href="https://github.com/sparanoid/chinese-copywriting-guidelines">参考此页</a></li>
+      <li>支持 Markdown 格式, <strong>**粗体**</strong>、~~删除线~~、<code>`单行代码`</code>, 更多语法请见这里 <a href="https://github.com/riku/Markdown-Syntax-CN/blob/master/syntax.md">Markdown 语法</a></li>
+      <li>支持表情，使用方法请见 <a href="https://phphub.org/topics/45" target="_blank">Emoji 自动补全来咯</a>，可用的 Emoji 请见 <img src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/metal.png" class="emoji" alt=":metal:" title=":metal:" align="absmiddle"> <img src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/point_right.png" class="emoji" alt=":point_right:" title=":point_right:" align="absmiddle"> <a href="https://phphub.org/ecc/index.html" target="_blank" rel="nofollow"> Emoji 列表 </a> <img src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/star.png" class="emoji" alt=":star:" title=":star:" align="absmiddle"> <img src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/sparkles.png" class="emoji" alt=":sparkles:" title=":sparkles:" align="absmiddle"> </li>
+      <li>上传图片, 支持拖拽和剪切板黏贴上传, 格式限制 - jpg, png, gif</li>
+      <li>发布框支持本地存储功能，会在内容变更时保存，「提交」按钮点击时清空</li>
+    </ul>
+</div>
+
+        <div class="form-group">
+                                            <textarea class="form-control" rows="5" placeholder="请使用 Markdown 格式书写 ;-)" style="overflow: hidden; word-wrap: break-word; resize: horizontal; height: 164px;" id="reply_content" name="body" cols="50"></textarea>
+                                    </div>
+
+        <div class="form-group reply-post-submit">
+            <input class="btn btn-primary " id="reply-create-submit" value="回复" type="submit">
+            <span class="help-inline" title="Or Command + Enter">Ctrl+Enter</span>
+        </div>
+
+        <div class="box preview markdown-reply" id="preview-box" style="display:none;"></div>
+
+    </form>
+  </div>
+
+
+</div>
+
+
+<div class="col-md-3 side-bar">
+
+      <div class="panel panel-default corner-radius">
+
+      <div class="panel-heading text-center">
+        <h3 class="panel-title">作者：qq215672398</h3>
+      </div>
+
+    <div class="panel-body text-center topic-author-box">
+        <a href="https://phphub.org/users/1202">
+  <img src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/1202_1431763756.png" style="width:80px; height:80px;margin:5px;" class="img-thumbnail avatar">
+</a>
+
+<div class="media-body padding-top-sm">
+<div class="media-heading">
+
+    <span class="introduction">
+         还什么都没有哦
+    </span>
+
+</div>
+
+<ul class="list-inline">
+
+      <li title="" data-original-title="" class="popover-with-html" data-content="真实姓名"><span class="org"><i class="fa fa-user"></i> 李锐</span></li>
+  
+  
+    <li>
+    <a href="https://github.com/qq215672398" target="_blank">
+      <i class="fa fa-github-alt"></i> GitHub
+    </a>
+  </li>
+  
+  
+  
+  
+  
+  <li title="" data-original-title="" class="popover-with-html" data-content="在校"><i class="fa fa-users"></i> 公司</li>
+
+  <li title="" data-original-title="" class="popover-with-html" data-content="武汉"><i class="fa fa-map-marker"></i> 城市</li>
+
+</ul>
+
+<div class="clearfix"></div>
+</div>
+    </div>
+  </div>
+  
+
+    <div class="panel panel-default corner-radius">
+    <div class="panel-heading text-center">
+      <h3 class="panel-title">qq215672398 的其他话题</h3>
+    </div>
+    <div class="panel-body">
+      <ul class="list">
+                <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2077" class="popover-with-html" data-content="给 phper 的 react 快速入门介绍 [ES6]">
+                给 phper 的 react 快速入门介绍 [ES6]
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1944" class="popover-with-html" data-content="[phppoker] 德州扑克命令行版本">
+                [phppoker] 德州扑克命令行版本
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1859" class="popover-with-html" data-content="诸君，有一个数据查询的问题">
+                诸君，有一个数据查询的问题
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1761" class="popover-with-html" data-content="[新年第一帖] 大家新年好">
+                [新年第一帖] 大家新年好
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1757" class="popover-with-html" data-content="「Laravel 5+vue」learner.video 上线并且开源，欢迎订阅">
+                「Laravel 5+vue」learner.video 上线并且开源，欢迎订阅
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1552" class="popover-with-html" data-content="看看 Eloquent 中的 find 方法">
+                看看 Eloquent 中的 find 方法
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1530" class="popover-with-html" data-content="第一部完整的视频 (非 Laravel)，欢迎鲜花板砖">
+                第一部完整的视频 (非 Laravel)，欢迎鲜花板砖
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/1499" class="popover-with-html" data-content="[新的 message 包] toastr 依赖 jQuery 很轻量好看的提醒插件">
+                [新的 message 包] toastr 依赖 jQuery 很轻量好看的提醒插件
+            </a>
+        </li>
+        </ul>    </div>
+  </div>
+  
+
+    <div class="panel panel-default corner-radius">
+    <div class="panel-heading text-center">
+      <h3 class="panel-title">分类下其他主题</h3>
+    </div>
+    <div class="panel-body">
+      <ul class="list">
+                <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2540" class="popover-with-html" data-content="【扩展推荐】Laravel-user-verification 为你的应用添加验证用户邮箱逻辑">
+                【扩展推荐】Laravel-user-verification 为你的应用添加验证用户邮箱逻辑
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2539" class="popover-with-html" data-content="【扩展推荐】former 具有 Bootstrap 风格的表单生成助手">
+                【扩展推荐】former 具有 Bootstrap 风格的表单生成助手
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2538" class="popover-with-html" data-content="【扩展推荐】Laravel-uuid 通用唯一识别码">
+                【扩展推荐】Laravel-uuid 通用唯一识别码
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2537" class="popover-with-html" data-content="【扩展推荐】geoip 获取 IP 地理信息">
+                【扩展推荐】geoip 获取 IP 地理信息
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2536" class="popover-with-html" data-content="【扩展推荐】hashids 将数字序列混淆为字符串">
+                【扩展推荐】hashids 将数字序列混淆为字符串
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2535" class="popover-with-html" data-content="【扩展推荐】Laravel-5-Generators-Extended 代码生成器">
+                【扩展推荐】Laravel-5-Generators-Extended 代码生成器
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2534" class="popover-with-html" data-content="【扩展推荐】bugsnag-Laravel Bugsnag 官方 SDK">
+                【扩展推荐】bugsnag-Laravel Bugsnag 官方 SDK
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2533" class="popover-with-html" data-content="【扩展推荐】aws-sdk-php-laravel AWS 官方 SDK">
+                【扩展推荐】aws-sdk-php-laravel AWS 官方 SDK
+            </a>
+        </li>
+        </ul>    </div>
+  </div>
+  
+  <div class="panel panel-default corner-radius">
+
+          <div class="panel-heading text-center">
+        <h3 class="panel-title">分享</h3>
+      </div>
+    
+    <div class="panel-body text-center">
+      <div class="btn-group">
+        <a href="https://phphub.org/topics/create?category_id=5" class="btn btn-primary btn-lg">
+          <i class="fa fa-paint-brush" aria-hidden="true"></i>  新 建 话 题
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="panel panel-default corner-radius">
+    <div class="panel-body text-center sidebar-sponsor-box">
+                                    <a class="sidebar-sponsor-link" href="http://www.ucloud.cn/site/seo.html?utm_source=zanzhu&amp;utm_campaign=phphub&amp;utm_medium=display&amp;utm_content=shengji&amp;ytag=phphubshenji" target="_blank">
+                    <img title="" data-original-title="" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/IHfTLiWaKJ4CmUL4Tfbc.jpg" class="popover-with-html" data-content="UCloud" width="100%">
+                </a>
+                            <a class="sidebar-sponsor-link" href="http://www.qiniu.com/products/live?utm_campaign=zhiboyunproduct&amp;utm_source=phphub&amp;utm_medium=advposition&amp;utm_content=png" target="_blank">
+                    <img title="" data-original-title="" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/VttpFstRPJH2FE4HECqy.png" class="popover-with-html" data-content="七牛" width="100%">
+                </a>
+                      </div>
+  </div>
+
+  
+
+<div class="panel panel-default corner-radius panel-hot-topics">
+  <div class="panel-heading text-center">
+    <h3 class="panel-title">随机推荐话题</h3>
+  </div>
+  <div class="panel-body">
+    <ul class="list">
+                <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2530" class="popover-with-html" data-content="下载量最高的 100 个 Laravel 扩展包推荐">
+                下载量最高的 100 个 Laravel 扩展包推荐
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2298" class="popover-with-html" data-content="Laravel Tracy 1.5.0 版">
+                Laravel Tracy 1.5.0 版
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2183" class="popover-with-html" data-content="【北京】PHP 技术总监—40K 起！寻找最有才的你！">
+                【北京】PHP 技术总监—40K 起！寻找最有才的你！
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2140" class="popover-with-html" data-content="【北京】滴滴出行  /PHP/ 全栈 /18K-35K">
+                【北京】滴滴出行  /PHP/ 全栈 /18K-35K
+            </a>
+        </li>
+                      <li>
+            <a title="" data-original-title="" href="https://phphub.org/topics/2392" class="popover-with-html" data-content="【纪录片分享】商业创意在中国">
+                【纪录片分享】商业创意在中国
+            </a>
+        </li>
+        </ul>  </div>
+</div>
+
+
+
+</div>
+<div class="clearfix"></div>
+
+<div class="banner-container rbs row">
+    </div>
+
+
+			</div>
+
+<footer class="footer">
+      <div class="container">
+        <div class="row footer-top">
+
+          <div class="col-sm-5 col-lg-5">
+              <h4>
+                  <img src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/banner_transparent.png" alt="" width="160">
+                  <span class="pull-right text-md padding-top-lg" style="padding-top: 18px;">
+                      <a title="" data-original-title="" class="popover-with-html" data-content="查看源代码" target="_blank" style="padding-right:8px" href="https://github.com/summerblue/phphub5"><i class="fa fa-github-alt" aria-hidden="true"></i></a>
+                      <a title="" data-original-title="" class="popover-with-html" data-content="关注 PHPHub 微博账号" target="_blank" style="padding-right:8px" href="http://weibo.com/phphub"><i class="fa fa-weibo" aria-hidden="true"></i></a>
+                      <a title="" data-original-title="" class="popover-with-html" data-content="扫码关注微信订阅号：PHPHub" target="_blank" style="padding-right:8px" href="https://dn-phphub.qbox.me/uploads/images/201607/19/1/5KAh3F8EhD.jpg"><i class="fa fa-weixin" aria-hidden="true"></i></a>
+                      <a title="" data-original-title="" class="popover-with-html" data-content="下载 Chrome 消息通知插件" target="_blank" style="padding-right:8px" href="https://chrome.google.com/webstore/detail/phphub-notifier/fcopfkdgikhodlcjkjdppdfkbhmehdon"><i class="fa fa-chrome" aria-hidden="true"></i></a>
+                  </span>
+              </h4>
+              <p class="padding-top-xsm">我们是国内最大的 PHP &amp; Laravel 开源社区，致力于打造一个 PHPer 分享创造、结识伙伴、协同互助的平台。</p>
+              <span style="font-size:0.9em">♥ Do what you love, love what you do. - <a href="http://estgroupe.com/">The EST Group</a></span>
+          </div>
+
+          <div class="col-sm-6 col-lg-6 col-lg-offset-1">
+
+              <div class="row">
+                <div class="col-sm-3">
+                  <h4>赞助商</h4>
+                  <ul class="list-unstyled">
+                                                                              <a href="http://www.ucloud.cn/?utm_source=zanzhu&amp;utm_campaign=phphub&amp;utm_medium=display&amp;utm_content=yejiao&amp;ytag=phphubyejiao" target="_blank"><img title="" data-original-title="" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/bQawWl3vT5dc2lYx5JZ7.png" class="popover-with-html footer-sponsor-link" data-placement="top" data-content="本站服务器由 UCloud 赞助" width="98"></a>
+                                                        <a href="http://www.qiniu.com/?utm_source=phphub" target="_blank"><img title="" data-original-title="" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/yGLIR0idW7zsInjsNmzr.png" class="popover-with-html footer-sponsor-link" data-placement="top" data-content="本站 CDN 服务由七牛赞助" width="98"></a>
+                                                                  </ul>
+                </div>
+
+                  <div class="col-sm-3">
+                    <h4>统计信息</h4>
+                    <ul class="list-unstyled">
+                        <li>社区会员: 5262 </li>
+                        <li>主题数: 2283 </li>
+                        <li>评论数: 10825 </li>
+                    </ul>
+                  </div>
+                  <div class="col-sm-3">
+                    <h4>其他信息</h4>
+                    <ul class="list-unstyled">
+                        <li><a href="https://phphub.org/about">关于我们</a></li>
+                        <li class="hide"><a href="https://phphub.org/links">站点推荐</a></li>
+                        <li><a href="http://weibo.com/u/5963322692" target="_blank">微博账号</a></li>
+                        <li title="" data-original-title="" class="popover-with-html" data-content="新手 QQ 群">Q 群：579866868</li>
+                    </ul>
+                  </div>
+                  <div class="col-sm-3">
+                      <h4>微信订阅号</h4>
+                    <img title="" data-original-title="" class="image-border popover-with-html" data-content="扫码，或者搜索微信订阅号：PHPHub" src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/5KAh3F8EhD.jpg" style="width:100px;height:100px;">
+                  </div>
+
+                </div>
+
+          </div>
+        </div>
+        <br>
+        <br>
+      </div>
+    </footer>
+
+		</div>
+
+
+
+        <script src="windows%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%20Redis%20%E7%BC%93%E5%AD%98%E4%BB%A5%E5%8F%8A%20lv5%20%E4%B8%AD%E7%9A%84%20Redis%20%E7%BC%93%E5%AD%98_PHPHub%20-%20PHP%20&amp;%20Laravel%E7%9A%84%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA_files/scripts-acec2654e9.js"></script>
+
+	    <script type="text/javascript">
+
+    $(document).ready(function()
+    {
+        var $config = {
+            title               : '快速使用 Redis 缓存以及 lv5 中的 Redis 缓存 from PHPHub - PHP，Laravel的中文社区 #laravel# @phphub  @李桂龙_CJ ',
+            wechatQrcodeTitle   : "微信扫一扫：分享", // 微信二维码提示文字
+            wechatQrcodeHelper  : '<p>微信里点“发现”，扫一下</p><p>二维码便可将本文分享至朋友圈。</p>',
+            sites               : ['weibo','wechat',  'facebook', 'twitter', 'google','qzone', 'qq', 'douban'],
+        };
+
+        socialShare('.social-share-cs', $config);
+    });
+
+</script>
+
+        		<script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-53903425-6', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+        
+
+	
+
+<a style="position: fixed; z-index: 2147483647; display: none;" href="#top" id="scrollUp">Scroll to top</a><textarea id="autosizejs" class="autosizejs" tabindex="-1" style="position: absolute; top: -999px; left: 0px; right: auto; bottom: auto; border: 0px none; padding: 0px; box-sizing: content-box; word-wrap: break-word; height: 0px ! important; min-height: 0px ! important; overflow: hidden; transition: none 0s ease 0s ; font-family: NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,&quot;Microsoft Yahei&quot;,&quot;Hiragino Sans GB&quot;,&quot;WenQuanYi Micro Hei&quot;,sans-serif; font-size: 15px; font-weight: 400; font-style: normal; letter-spacing: 0px; text-transform: none; word-spacing: 0px; text-indent: 0px; line-height: 30px; width: 986.5px;">请使用 Markdown 格式书写 ;-)
+</textarea></body></html>
